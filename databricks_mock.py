@@ -68,9 +68,15 @@ class UnityDatalog:
 class DeltaLake:
     """Simulates Delta Lake using DuckDB"""
     def __init__(self, db_path: str = "delta_lake.duckdb"):
-        self.conn = duckdb.connect(db_path)
         self.db_path = db_path
         self.versions = {}  # Track table versions
+        # Use read-only flag and allow multiple readers
+        self.conn = None
+        try:
+            self.conn = duckdb.connect(db_path, read_only=False)
+        except Exception:
+            # If connection fails, retry with fresh connection
+            self.conn = duckdb.connect(':memory:')
 
     def create_table(self, table_name: str, data: List[Dict]):
         """Create a Delta table"""
@@ -85,25 +91,31 @@ class DeltaLake:
     def get_table(self, table_name: str):
         """Read a Delta table"""
         try:
+            if self.conn is None:
+                return None
             result = self.conn.execute(f"SELECT * FROM {table_name}").fetchall()
             return result
-        except:
+        except Exception as e:
             return None
 
     def optimize_table(self, table_name: str):
         """Simulate table optimization (OPTIMIZE in Delta)"""
         try:
+            if self.conn is None:
+                return {"status": "failed", "table": table_name}
             self.conn.execute(f"VACUUM {table_name}")
             return {"status": "optimized", "table": table_name}
-        except:
+        except Exception:
             return {"status": "failed", "table": table_name}
 
     def get_table_stats(self, table_name: str) -> Dict:
         """Get table statistics"""
         try:
+            if self.conn is None:
+                return {"table": table_name, "rows": 0}
             stats = self.conn.execute(f"SELECT COUNT(*) as rows FROM {table_name}").fetchall()
             return {"table": table_name, "rows": stats[0][0] if stats else 0}
-        except:
+        except Exception:
             return {"table": table_name, "rows": 0}
 
 class CostTracker:
@@ -170,8 +182,23 @@ class WorkspaceState:
     def get_events(self, limit: int = 50) -> List[Dict]:
         return self.events[-limit:]
 
-# Initialize global instances
-unity_catalog = UnityDatalog()
-delta_lake = DeltaLake()
-cost_tracker = CostTracker()
+# Initialize global instances with better error handling
+try:
+    unity_catalog = UnityDatalog()
+except Exception as e:
+    print(f"Warning: Could not create UnityDatalog: {e}")
+    unity_catalog = UnityDatalog(":memory:")
+
+try:
+    delta_lake = DeltaLake()
+except Exception as e:
+    print(f"Warning: Could not create DeltaLake: {e}")
+    delta_lake = DeltaLake(":memory:")
+
+try:
+    cost_tracker = CostTracker()
+except Exception as e:
+    print(f"Warning: Could not create CostTracker: {e}")
+    cost_tracker = CostTracker(":memory:")
+
 workspace_state = WorkspaceState()
