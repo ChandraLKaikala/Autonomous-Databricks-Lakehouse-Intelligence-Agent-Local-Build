@@ -9,7 +9,7 @@ import os
 class UnityDatalog:
     """Simulates Unity Catalog - metadata and governance"""
     def __init__(self, db_path: str = "unity_catalog.db"):
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
         self.init_db()
 
@@ -121,7 +121,7 @@ class DeltaLake:
 class CostTracker:
     """Track Databricks costs"""
     def __init__(self, db_path: str = "cost_tracking.db"):
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
         self.init_db()
 
     def init_db(self):

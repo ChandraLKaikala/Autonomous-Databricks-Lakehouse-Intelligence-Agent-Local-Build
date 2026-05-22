@@ -1,17 +1,20 @@
 # 🤖 Autonomous Databricks Lakehouse Intelligence Agent System
 
-A production-grade multi-agent AI system that autonomously manages Databricks infrastructure, including Delta Lake, DLT Pipelines, Workflows, Unity Catalog, and cost optimization.
+**A production-grade, multi-agent AI system that autonomously manages, optimizes, and governs Databricks lakehouse infrastructure using Claude AI.**
 
-## 🎯 Project Overview
+> **TL;DR**: 8 specialized AI agents that work 24/7 to manage your data infrastructure without human intervention, using advanced agentic AI patterns.
 
-This is a  project built end-to-end in VS Code with:
+## 🎯 What This Project Does
 
-- **8 Intelligent AI Agents** (using Claude API) that think and make decisions
-- **Mock Databricks Environment** (Unity Catalog, Delta Lake, Workflows)
-- **DLT Pipelines** with declarative definitions and lineage tracking
-- **Workflow Orchestration** with scheduling and dependency management
-- **Real-time Dashboard** to visualize agent decisions
-- **Cloud-native Architecture** (cloud + data engineering + gen AI + agentic AI)
+This is an **advanced AI system** that demonstrates:
+
+- **8 Intelligent AI Agents** (using Claude AI) with autonomous decision-making
+- **Agentic Loops**: Observe → Think → Decide → Act → Learn (repeated continuously)
+- **Mock Databricks Environment** (Unity Catalog, Delta Lake, DLT Pipelines, Workflows)
+- **Real-time Dashboard** showing agent decisions, metrics, and recommendations
+- **Enterprise-Grade Architecture** combining cloud, data engineering, and agentic AI
+- **Multi-Agent Orchestration** where agents coordinate to make holistic decisions
+- **Fire-and-Forget Execution** with background threading (non-blocking UI)
 
 ## 🏗️ Architecture
 

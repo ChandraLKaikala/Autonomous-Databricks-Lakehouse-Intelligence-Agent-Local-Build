@@ -94,6 +94,8 @@ class GovernanceAgent(Agent):
                 unity_catalog.update_quality_score(table["name"], 0.85)
                 actions.append(f"Classified {table['name']} as containing PII")
 
+        self.act(f"Reviewed {len(tables)} tables for governance compliance")
+
         return {
             "agent": "GovernanceAgent",
             "tables_monitored": len(tables),
@@ -124,6 +126,9 @@ class DeltaOptimizationAgent(Agent):
                 # Perform optimization
                 self.act(f"Optimizing {table['name']}")
 
+        if not optimizations:
+            self.act(f"Analyzed {len(tables)} tables for optimization opportunities")
+
         return {
             "agent": "DeltaOptimizationAgent",
             "tables_analyzed": len(tables),
@@ -143,6 +148,8 @@ class SparkQueryOptimizer(Agent):
 
         prompt = f"We have {len(workflows)} workflows. Issues: {len(issues)}. Optimization opportunities: {len(suggestions)}. What's the priority?"
         analysis = self.think(prompt)
+
+        self.act(f"Optimized {len(workflows)} Spark workflows with {len(suggestions)} recommendations")
 
         return {
             "agent": "SparkQueryOptimizer",
@@ -227,6 +234,9 @@ class DLTPipelineAgent(Agent):
         for issue in issues:
             self.act(f"Addressing pipeline issue: {issue.get('issue')}")
 
+        if not issues:
+            self.act(f"Monitored {len(pipelines)} DLT pipelines - all healthy")
+
         return {
             "agent": "DLTPipelineAgent",
             "pipelines_monitored": len(pipelines),
@@ -253,6 +263,9 @@ class WorkflowOrchestratorAgent(Agent):
             result = workflow_scheduler.trigger_workflow(wf_name)
             results[wf_name] = result
             self.act(f"Triggered workflow: {wf_name}")
+
+        if not results:
+            self.act(f"Orchestrated {len(workflows)} workflows")
 
         return {
             "agent": "WorkflowOrchestratorAgent",
@@ -281,6 +294,7 @@ class OrchestratorAgent(Agent):
         strategic_analysis = self.think(prompt)
 
         workspace_state.metrics["optimization_recommendations"] += 1
+        self.act(f"Coordinated {len(self.agents)} agents - strategic decisions made")
 
         return {
             "agent": "OrchestratorAgent",

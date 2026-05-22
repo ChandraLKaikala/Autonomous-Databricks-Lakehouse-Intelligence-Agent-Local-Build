@@ -172,23 +172,27 @@
             }
         }
 
-        async function runAgents() {
+        function runAgents() {
             const button = event.target;
             button.disabled = true;
-            button.textContent = '⏳ Running Agents...';
+            button.textContent = 'Running Agents...';
 
-            try {
-                await fetch(`${API_URL}/agents/run`, { method: 'POST' });
-                setTimeout(() => {
-                    refreshDashboard();
-                    button.disabled = false;
-                    button.textContent = 'Run All Agents';
-                }, 2000);
-            } catch (error) {
-                console.error('Error:', error);
+            // Send request but don't wait for response (non-blocking)
+            fetch(`${API_URL}/agents/run`, { method: 'POST' }).catch(err => console.log('Background execution started'));
+
+            // Reset button immediately
+            setTimeout(() => {
                 button.disabled = false;
                 button.textContent = 'Run All Agents';
-            }
+            }, 1000);
+
+            // Show status message
+            alert('Agents are running in background. Results will update automatically in 5 seconds.');
+
+            // Auto-refresh dashboard after delay
+            setTimeout(() => {
+                refreshDashboard();
+            }, 5000);
         }
 
         // Auto-refresh every 10 seconds
