@@ -1,5 +1,5 @@
 """Flask API backend for the Databricks Agent System Dashboard"""
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory, render_template_string
 from flask_cors import CORS
 from databricks_mock import unity_catalog, delta_lake, cost_tracker, workspace_state
 from dlt_pipelines import pipeline_manager
@@ -7,15 +7,32 @@ from workflows import workflow_scheduler
 from agents import initialize_agents
 import json
 from datetime import datetime
+import os
 
 app = Flask(__name__)
 CORS(app)
 
-# Initialize agents
-governance, delta_opt, spark_opt, cost_mgmt, data_quality, dlt_pipeline, workflow_orch, orchestrator = initialize_agents()
+# Initialize agents with error handling
+try:
+    governance, delta_opt, spark_opt, cost_mgmt, data_quality, dlt_pipeline, workflow_orch, orchestrator = initialize_agents()
+except Exception as e:
+    print(f"Warning: Agent initialization failed: {e}")
+    governance = delta_opt = spark_opt = cost_mgmt = data_quality = dlt_pipeline = workflow_orch = orchestrator = None
 
 # Store agent results
 agent_results = {}
+
+@app.route('/', methods=['GET'])
+def serve_dashboard():
+    """Serve the dashboard HTML"""
+    try:
+        # Get absolute path to dashboard.html
+        dashboard_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard.html')
+        with open(dashboard_path, 'r', encoding='utf-8') as f:
+            html_content = f.read()
+        return html_content, 200, {'Content-Type': 'text/html; charset=utf-8'}
+    except Exception as e:
+        return f"Error loading dashboard: {str(e)}", 500
 
 @app.route('/api/health', methods=['GET'])
 def health():
@@ -178,29 +195,36 @@ def get_recommendations():
 @app.route('/api/dashboard-data', methods=['GET'])
 def get_dashboard_data():
     """Get all data needed for dashboard"""
-    return jsonify({
-        "overview": {
-            "workspace_metrics": workspace_state.metrics,
-            "total_tables": len(unity_catalog.get_tables()),
-            "total_pipelines": len(pipeline_manager.list_pipelines()),
-            "total_workflows": len(workflow_scheduler.list_workflows())
-        },
-        "costs": {
-            "total_7days": f"${cost_tracker.get_total_cost():.2f}",
-            "breakdown": cost_tracker.get_cost_breakdown()
-        },
-        "agents": [
-            governance.get_status(),
-            delta_opt.get_status(),
-            spark_opt.get_status(),
-            cost_mgmt.get_status(),
-            data_quality.get_status(),
-            dlt_pipeline.get_status(),
-            workflow_orch.get_status()
-        ],
-        "recent_events": workspace_state.get_events(20),
-        "timestamp": datetime.now().isoformat()
-    })
+    try:
+        tables = unity_catalog.get_tables() if unity_catalog else []
+        pipelines = pipeline_manager.list_pipelines() if pipeline_manager else []
+        workflows = workflow_scheduler.list_workflows() if workflow_scheduler else []
+
+        return jsonify({
+            "overview": {
+                "workspace_metrics": workspace_state.metrics,
+                "total_tables": len(tables),
+                "total_pipelines": len(pipelines),
+                "total_workflows": len(workflows)
+            },
+            "costs": {
+                "total_7days": f"${cost_tracker.get_total_cost():.2f}" if cost_tracker else "$0.00",
+                "breakdown": cost_tracker.get_cost_breakdown() if cost_tracker else {}
+            },
+            "agents": [
+                governance.get_status() if governance else {},
+                delta_opt.get_status() if delta_opt else {},
+                spark_opt.get_status() if spark_opt else {},
+                cost_mgmt.get_status() if cost_mgmt else {},
+                data_quality.get_status() if data_quality else {},
+                dlt_pipeline.get_status() if dlt_pipeline else {},
+                workflow_orch.get_status() if workflow_orch else {}
+            ],
+            "recent_events": workspace_state.get_events(20),
+            "timestamp": datetime.now().isoformat()
+        })
+    except Exception as e:
+        return jsonify({"error": str(e), "timestamp": datetime.now().isoformat()}), 200
 
 if __name__ == '__main__':
     # Disable auto-reload to prevent file lock issues with DuckDB

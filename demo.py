@@ -176,6 +176,11 @@ def run_demo():
     for line in orchestrator_result['strategic_analysis'].split('\n')[:3]:
         print(f"      {line}")
 
+    # Update final metrics
+    workspace_state.metrics['total_tables'] = len(unity_catalog.get_tables())
+    workspace_state.metrics['total_pipelines'] = len(pipeline_manager.list_pipelines())
+    workspace_state.metrics['total_workflows'] = len(workflow_scheduler.list_workflows())
+
     # Show final metrics
     print("\n" + "="*60)
     print("[METRICS] FINAL SYSTEM METRICS")
