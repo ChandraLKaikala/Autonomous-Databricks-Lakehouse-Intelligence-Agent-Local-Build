@@ -276,9 +276,7 @@ To add new capabilities:
 - [ ] Historical trend analysis
 - [ ] Predictive optimization
 
-## 📝 License
 
-This is a demonstration project for educational purposes.
 
 ## 🤝 Support
 
