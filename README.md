@@ -4,7 +4,7 @@ A production-grade multi-agent AI system that autonomously manages Databricks in
 
 ## 🎯 Project Overview
 
-This is a **10-year enterprise-scale project** built end-to-end in VS Code with:
+This is a  project built end-to-end in VS Code with:
 
 - **8 Intelligent AI Agents** (using Claude API) that think and make decisions
 - **Mock Databricks Environment** (Unity Catalog, Delta Lake, Workflows)
